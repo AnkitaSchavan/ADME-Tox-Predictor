@@ -1,0 +1,25 @@
+# Core App Framework
+streamlit==1.39.0
+
+# Data Handling
+pandas
+numpy
+
+# Chemistry & Molecular Libraries
+rdkit-pypi
+pubchempy
+py3Dmol
+
+# Machine Learning & Statistics
+scikit-learn
+joblib
+
+# Visualization
+matplotlib
+seaborn
+plotly
+Pillow
+
+# Utility Libraries
+requests
+json5
