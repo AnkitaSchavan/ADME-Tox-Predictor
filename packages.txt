@@ -1,2 +1,4 @@
 libxrender1
-patchelf
+libgomp1
+libsm6
+libxext6
