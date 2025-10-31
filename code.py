@@ -3,7 +3,7 @@ import pandas as pd
 import numpy as np
 from rdkit import Chem
 from rdkit.Chem import Descriptors, Draw, AllChem, DataStructs, Lipinski, Crippen
-from rdkit.Chem import PandasTools, rdFingerprintGenerator
+from rdkit.Chem import rdFingerprintGenerator
 from rdkit.Chem.Draw import SimilarityMaps
 from rdkit.Chem.Scaffolds import MurckoScaffold
 import pubchempy as pcp
