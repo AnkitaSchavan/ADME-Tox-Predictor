@@ -2832,36 +2832,65 @@ elif app_mode == "🎯 Prediction Interface":
 
                 
 
-    # ========== BATCH PREDICTION ==========
     with tab2:
-        st.markdown("### 📊 Batch Prediction")
-        uploaded_file = st.file_uploader("Upload CSV with 'smiles' column", type=['csv'])
-        if uploaded_file:
-            batch_df = pd.read_csv(uploaded_file)
-            if 'smiles' not in batch_df.columns:
-                st.error("CSV must contain a 'smiles' column.")
+    st.markdown("### 📊 Batch Prediction")
+    uploaded_file = st.file_uploader("Upload CSV with 'smiles' column", type=['csv'], key="batch_uploader")
+
+    if uploaded_file:
+        batch_df = pd.read_csv(uploaded_file)
+        if 'smiles' not in batch_df.columns:
+            st.error("CSV must contain a 'smiles' column.")
+            st.stop()
+
+        selected_model = st.selectbox("Select model for batch prediction:", available_models, key='batch_model')
+        feature_type_batch = st.selectbox(
+            "Feature type:",
+            ["all", "basic", "fingerprints", "advanced", "mordred", "images", "encodings"],
+            key='batch_features'
+        )
+
+        if st.button("Run Batch Prediction", type="primary"):
+            predictor = st.session_state.ml_predictor
+
+            # Safe feature calculation
+            try:
+                features, valid_smiles, current_feature_names = predictor.create_features(
+                    batch_df['smiles'].tolist(),
+                    feature_type=feature_params.get('feature_type', feature_type_batch)
+                )
+            except Exception as e:
+                st.error(f"Feature calculation failed: {e}")
                 st.stop()
 
-            selected_model = st.selectbox("Select model:", available_models, key='batch_model')
-            feature_type_batch = st.selectbox("Feature type:", ["all", "basic", "fingerprints", "advanced"], key='batch_features')
+            # Align features
+            df_new = pd.DataFrame(features, columns=current_feature_names)
+            df_new = df_new.reindex(columns=saved_feature_names, fill_value=0)
+            features_scaled = scaler.transform(df_new.values)
 
-            if st.button("Run Batch Prediction", type="primary"):
-                features, valid_smiles, current_feature_names = st.session_state.ml_predictor.create_features(batch_df['smiles'].tolist(), feature_type_batch)
-                df_new = pd.DataFrame(features, columns=current_feature_names)
-                df_new = df_new.reindex(columns=saved_feature_names, fill_value=0)
-                features_aligned = df_new.values
-                features_scaled = scaler.transform(features_aligned)
+            # Predict
+            try:
+                predictions, probabilities = predictor.predict(features_scaled, selected_model)
+            except Exception as e:
+                st.error(f"Prediction failed: {e}")
+                st.stop()
 
-                predictions, probabilities = st.session_state.ml_predictor.predict(features_scaled, selected_model)
-                batch_df['prediction'] = predictions
-                if probabilities is not None:
-                    if len(probabilities.shape) == 2 and probabilities.shape[1] == 2:
-                        batch_df['probability'] = probabilities[:, 1]
-                    else:
-                        batch_df['probability'] = probabilities
+            # Add predictions to DataFrame
+            batch_df['prediction'] = predictions
+            if probabilities is not None:
+                if len(probabilities.shape) == 2 and probabilities.shape[1] == 2:
+                    batch_df['probability'] = probabilities[:, 1]
+                else:
+                    batch_df['probability'] = probabilities
 
-                st.dataframe(batch_df)
-                st.download_button("📥 Download Predictions", batch_df.to_csv(index=False), "predictions.csv", "text/csv")
+            st.success("✅ Batch Predictions generated!")
+            st.dataframe(batch_df)
+            st.download_button(
+                "📥 Download Predictions",
+                batch_df.to_csv(index=False),
+                "predictions.csv",
+                "text/csv"
+            )
+
 elif app_mode == "📚 Model Library":
     st.markdown("""
     <div class="main-header">
