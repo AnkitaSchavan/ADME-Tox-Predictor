@@ -1051,6 +1051,22 @@ def create_features(smiles_list, feature_type, use_mordred, fingerprint_type=Non
     return features, valid_smiles, feature_names
     
 # ============================================================================
+# FIX: Suppress ScriptRunContext warnings
+# ============================================================================
+import logging
+logging.getLogger('streamlit.runtime.scriptrunner_utils.script_run_context').setLevel(logging.ERROR)
+
+# Alternative method - wrap problematic code
+def safe_streamlit_call(func):
+    """Decorator to safely call Streamlit functions"""
+    def wrapper(*args, **kwargs):
+        try:
+            return func(*args, **kwargs)
+        except Exception as e:
+            logging.debug(f"Streamlit context error (safe to ignore): {e}")
+            return None
+    return wrapper
+# ============================================================================
 # PAGE CONFIGURATION AND STYLING
 # ============================================================================
 
