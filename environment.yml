@@ -4,15 +4,15 @@ channels:
   - defaults
 dependencies:
   - python=3.10
-  - rdkit>=2023.9.1  # Use a newer version of RDKit
-  - pandas<2.2  # Use a compatible pandas version
+  - rdkit
+  - pandas
+  - numpy
+  - scikit-learn
+  - matplotlib
+  - seaborn
   - pip
   - pip:
     - streamlit==1.39.0
-    - numpy
-    - scikit-learn
-    - matplotlib
-    - seaborn
     - plotly
     - Pillow
     - pubchempy
