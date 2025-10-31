@@ -1,25 +1,12 @@
-# Core App Framework
-streamlit==1.39.0
-
-# Data Handling
+streamlit
 pandas
 numpy
-
-# Chemistry & Molecular Libraries
-rdkit
+rdkit-pypi
 pubchempy
 py3Dmol
-
-# Machine Learning & Statistics
+requests
 scikit-learn
-joblib
-
-# Visualization
 matplotlib
 seaborn
 plotly
-Pillow
-
-# Utility Libraries
-requests
-json5
+joblib
