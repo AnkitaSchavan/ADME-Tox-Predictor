@@ -171,7 +171,6 @@ class AdvancedMolecularPredictor:
                 Descriptors.NumRadicalElectrons(mol),
                 Descriptors.NumAliphaticRings(mol),
                 Descriptors.NumSaturatedRings(mol),
-                Descriptors.NumAmideBonds(mol),
                 Descriptors.NumAromaticCarbocycles(mol),
                 Descriptors.NumAromaticHeterocycles(mol),
                 Descriptors.NumSpiroAtoms(mol),
@@ -183,7 +182,7 @@ class AdvancedMolecularPredictor:
                 'NumRotatableBonds', 'NumAromaticRings', 'NumHeavyAtoms',
                 'FractionCSP3', 'MolMR', 'NumHeteroatoms', 'NumValenceElectrons',
                 'NumRadicalElectrons', 'NumAliphaticRings', 'NumSaturatedRings',
-                'NumAmideBonds', 'NumAromaticCarbocycles', 'NumAromaticHeterocycles',
+                 'NumAromaticCarbocycles', 'NumAromaticHeterocycles',
                 'NumSpiroAtoms', 'NumBridgeheadAtoms'
             ])
         
