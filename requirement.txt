@@ -6,7 +6,7 @@ pandas
 numpy
 
 # Chemistry & Molecular Libraries
-rdkit-pypi==2022.9.5
+rdkit
 pubchempy
 py3Dmol
 
