@@ -1083,13 +1083,15 @@ def safe_streamlit_call(func):
 # PAGE CONFIGURATION AND STYLING
 # ============================================================================
 
-st.set_page_config(
-    layout="wide",
-    page_title="Advanced ML Drug Discovery Platform",
-    page_icon="🧪",
-    initial_sidebar_state="expanded"
-)
-
+try:
+    st.set_page_config(
+        layout="wide",
+        page_title="Advanced ML Drug Discovery Platform",
+        page_icon="🧪",
+        initial_sidebar_state="expanded"
+    )
+except Exception:
+    pass
 # Enhanced CSS Styling
 st.markdown("""
 <style>
