@@ -2673,6 +2673,10 @@ elif app_mode == "🎯 Prediction Interface":
     tab1, tab2 = st.tabs(["🔮 Single Prediction", "📊 Batch Prediction"])
 
     import pickle
+    import pandas as pd
+    import inspect
+
+    # Load scaler and feature names
     try:
         with open('scaler.pkl', 'rb') as f:
             scaler = pickle.load(f)
@@ -2682,6 +2686,7 @@ elif app_mode == "🎯 Prediction Interface":
         st.error("Scaler or feature names not found. Please train the model first.")
         st.stop()
 
+    # Load feature parameters
     try:
         with open('feature_params.pkl', 'rb') as f:
             feature_params = pickle.load(f)
@@ -2689,14 +2694,14 @@ elif app_mode == "🎯 Prediction Interface":
         st.error("Feature parameters not found. Please retrain the model.")
         st.stop()
 
+    available_models = list(st.session_state.ml_predictor.models.keys()) + \
+                       list(st.session_state.dl_predictor.models.keys())
+
     # ========== SINGLE PREDICTION ==========
     with tab1:
         st.markdown("### 🔮 Single Molecule Prediction")
         smiles_input = st.text_input("Enter SMILES string:", "CCO")
 
-        available_models = list(st.session_state.ml_predictor.models.keys()) + list(
-            st.session_state.dl_predictor.models.keys()
-        )
         selected_model = st.selectbox("Select model for prediction:", available_models)
         feature_type = st.selectbox(
             "Feature type:",
@@ -2708,14 +2713,17 @@ elif app_mode == "🎯 Prediction Interface":
                 st.error("Please enter a SMILES string.")
                 st.stop()
 
-            # 🧬 Create features
-            features, valid_smiles, current_feature_names = st.session_state.ml_predictor.create_features(
-                [smiles_input],
-                feature_type=feature_params.get('feature_type', feature_type)
-            )
+            # Create features safely
+            try:
+                features, valid_smiles, current_feature_names = st.session_state.ml_predictor.create_features(
+                    [smiles_input],
+                    feature_type=feature_params.get('feature_type', feature_type)
+                )
+            except Exception as e:
+                st.error(f"Feature calculation failed: {e}")
+                st.stop()
 
             # Align features
-            import pandas as pd
             df_new = pd.DataFrame(features, columns=current_feature_names)
             df_new = df_new.reindex(columns=saved_feature_names, fill_value=0)
             features_aligned = df_new.values
@@ -2724,11 +2732,14 @@ elif app_mode == "🎯 Prediction Interface":
                 st.error(f"Feature size mismatch: expected {scaler.mean_.shape[0]}, got {features_aligned.shape[1]}")
                 st.stop()
 
-            # Scale
+            # Scale and predict
             features_scaled = scaler.transform(features_aligned)
+            try:
+                predictions, probabilities = st.session_state.ml_predictor.predict(features_scaled, selected_model)
+            except Exception as e:
+                st.error(f"Prediction failed: {e}")
+                st.stop()
 
-            # Predict
-            predictions, probabilities = st.session_state.ml_predictor.predict(features_scaled, selected_model)
             st.success(f"Prediction: {predictions[0]}")
             if probabilities is not None:
                 st.write("Class probabilities:")
@@ -2743,31 +2754,6 @@ elif app_mode == "🎯 Prediction Interface":
             key="batch_prediction_uploader"
         )
 
-        if uploaded_file is not None:
-            df = pd.read_csv(uploaded_file)
-            if 'smiles' not in df.columns:
-                st.error("CSV must contain a 'smiles' column.")
-            else:
-                features, valid_smiles, current_feature_names = st.session_state.ml_predictor.create_features(
-                    df['smiles'].tolist(),
-                    feature_type=feature_params.get('feature_type', feature_type)
-                )
-
-                df_new = pd.DataFrame(features, columns=current_feature_names)
-                df_new = df_new.reindex(columns=saved_feature_names, fill_value=0)
-                features_scaled = scaler.transform(df_new.values)
-
-                predictions, probabilities = st.session_state.ml_predictor.predict(features_scaled, selected_model)
-
-                df['prediction'] = predictions
-                st.success("✅ Predictions generated!")
-                st.dataframe(df.head())
-
-    # ========== BATCH PREDICTION ==========
-    with tab2:
-        st.markdown("### 📊 Batch Prediction")
-        uploaded_file = st.file_uploader("Upload CSV with 'smiles' column", type=['csv'])
-
         if uploaded_file:
             batch_df = pd.read_csv(uploaded_file)
             if 'smiles' not in batch_df.columns:
@@ -2777,7 +2763,7 @@ elif app_mode == "🎯 Prediction Interface":
             selected_model = st.selectbox("Select model:", available_models, key='batch_model')
             feature_type_batch = st.selectbox(
                 "Feature type:",
-                ["all", "basic", "fingerprints", "advanced"],
+                ["all", "basic", "fingerprints", "advanced", "mordred", "images", "encodings"],
                 key='batch_features'
             )
 
@@ -2786,42 +2772,54 @@ elif app_mode == "🎯 Prediction Interface":
                 params = feature_params
                 n_args = len(inspect.signature(predictor.create_features).parameters)
 
-                if n_args == 2:
-                    features, valid_smiles, current_feature_names = predictor.create_features(batch_df['smiles'].tolist())
-                elif n_args == 3:
-                    features, valid_smiles, current_feature_names = predictor.create_features(
-                        batch_df['smiles'].tolist(),
-                        params.get('feature_type', feature_type_batch)
-                    )
-                elif n_args == 4:
-                    features, valid_smiles, current_feature_names = predictor.create_features(
-                        batch_df['smiles'].tolist(),
-                        params.get('feature_type', feature_type_batch),
-                        params.get('use_mordred', False)
-                    )
-                else:
-                    features, valid_smiles, current_feature_names = predictor.create_features(
-                        batch_df['smiles'].tolist(),
-                        params.get('feature_type', feature_type_batch),
-                        params.get('use_mordred', False),
-                        params.get('fingerprint_type', None),
-                        params.get('image_type', None)
-                    )
+                # Handle different create_features signatures
+                try:
+                    if n_args == 2:
+                        features, valid_smiles, current_feature_names = predictor.create_features(batch_df['smiles'].tolist())
+                    elif n_args == 3:
+                        features, valid_smiles, current_feature_names = predictor.create_features(
+                            batch_df['smiles'].tolist(),
+                            params.get('feature_type', feature_type_batch)
+                        )
+                    elif n_args == 4:
+                        features, valid_smiles, current_feature_names = predictor.create_features(
+                            batch_df['smiles'].tolist(),
+                            params.get('feature_type', feature_type_batch),
+                            params.get('use_mordred', False)
+                        )
+                    else:
+                        features, valid_smiles, current_feature_names = predictor.create_features(
+                            batch_df['smiles'].tolist(),
+                            params.get('feature_type', feature_type_batch),
+                            params.get('use_mordred', False),
+                            params.get('fingerprint_type', None),
+                            params.get('image_type', None)
+                        )
+                except Exception as e:
+                    st.error(f"Feature calculation failed: {e}")
+                    st.stop()
 
+                # Align and scale features
                 df_new = pd.DataFrame(features, columns=current_feature_names)
                 df_new = df_new.reindex(columns=saved_feature_names, fill_value=0)
-                features_aligned = df_new.values
-                features_scaled = scaler.transform(features_aligned)
+                features_scaled = scaler.transform(df_new.values)
 
-                predictions, probabilities = predictor.predict(features_scaled, selected_model)
+                # Predict
+                try:
+                    predictions, probabilities = predictor.predict(features_scaled, selected_model)
+                except Exception as e:
+                    st.error(f"Prediction failed: {e}")
+                    st.stop()
+
+                # Add predictions to DataFrame
                 batch_df['prediction'] = predictions
-
                 if probabilities is not None:
                     if len(probabilities.shape) == 2 and probabilities.shape[1] == 2:
                         batch_df['probability'] = probabilities[:, 1]
                     else:
                         batch_df['probability'] = probabilities
 
+                st.success("✅ Batch Predictions generated!")
                 st.dataframe(batch_df)
                 st.download_button(
                     "📥 Download Predictions",
@@ -2829,6 +2827,7 @@ elif app_mode == "🎯 Prediction Interface":
                     "predictions.csv",
                     "text/csv"
                 )
+
 
                 
 
