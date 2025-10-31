@@ -21,3 +21,4 @@ dependencies:
     - requests
     - json5
     - PyTDC
+    -pytorch
