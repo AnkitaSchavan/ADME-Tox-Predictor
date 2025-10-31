@@ -61,7 +61,16 @@ from sklearn.cluster import KMeans, DBSCAN, AgglomerativeClustering
 from sklearn.feature_selection import SelectKBest, f_classif, mutual_info_classif, RFE, f_regression
 from sklearn.inspection import permutation_importance, partial_dependence
 import joblib
-
+try:
+    # Test critical imports
+    from rdkit import Chem
+    from sklearn.ensemble import RandomForestClassifier
+    import pandas as pd
+    import numpy as np
+except ImportError as e:
+    import streamlit as st
+    st.error(f"Critical import failed: {str(e)}")
+    st.stop()
 # Advanced ML Libraries
 try:
     import xgboost as xgb
@@ -3254,7 +3263,7 @@ elif app_mode == "📚 TDC Datasets":
 if __name__ == "__main__":
     # Ensure all session state variables are initialized
     required_vars = ['ml_predictor', 'dl_predictor', 'clustering', 'chemical_analyzer', 'tdc_loader', 'dataset', 'trained_models']
-    
+ try:   
     for var in required_vars:
         if var not in st.session_state:
             if var == 'ml_predictor':
@@ -3271,7 +3280,9 @@ if __name__ == "__main__":
                 st.session_state[var] = None
             elif var == 'trained_models':
                 st.session_state[var] = {}
-    
+    except Exception as e:
+        st.error(f"Application error: {str(e)}")
+        st.error(traceback.format_exc())
     # Application footer
     st.markdown("---")
     st.markdown(
