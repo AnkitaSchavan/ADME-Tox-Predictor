@@ -3264,7 +3264,7 @@ elif app_mode == "📚 TDC Datasets":
 if __name__ == "__main__":
     # Ensure all session state variables are initialized
     required_vars = ['ml_predictor', 'dl_predictor', 'clustering', 'chemical_analyzer', 'tdc_loader', 'dataset', 'trained_models']
- try:   
+    
     for var in required_vars:
         if var not in st.session_state:
             if var == 'ml_predictor':
@@ -3281,9 +3281,7 @@ if __name__ == "__main__":
                 st.session_state[var] = None
             elif var == 'trained_models':
                 st.session_state[var] = {}
-    except Exception as e:
-        st.error(f"Application error: {str(e)}")
-        st.error(traceback.format_exc())
+    
     # Application footer
     st.markdown("---")
     st.markdown(
