@@ -19,3 +19,4 @@ dependencies:
     - joblib
     - requests
     - json5
+    - PyTDC
