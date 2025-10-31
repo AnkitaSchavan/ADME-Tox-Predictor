@@ -1,13 +1,14 @@
 name: adme-tox-env
 channels:
   - conda-forge
+  - defaults
 dependencies:
   - python=3.10
-  - rdkit
+  - rdkit>=2023.9.1  # Use a newer version of RDKit
+  - pandas<2.2  # Use a compatible pandas version
   - pip
   - pip:
     - streamlit==1.39.0
-    - pandas
     - numpy
     - scikit-learn
     - matplotlib
