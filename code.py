@@ -173,7 +173,6 @@ class AdvancedMolecularPredictor:
                 Descriptors.NumSaturatedRings(mol),
                 Descriptors.NumAromaticCarbocycles(mol),
                 Descriptors.NumAromaticHeterocycles(mol),
-                Descriptors.NumSpiroAtoms(mol),
                 Descriptors.NumBridgeheadAtoms(mol),
             ]
             features.extend(basic_features)
@@ -183,7 +182,7 @@ class AdvancedMolecularPredictor:
                 'FractionCSP3', 'MolMR', 'NumHeteroatoms', 'NumValenceElectrons',
                 'NumRadicalElectrons', 'NumAliphaticRings', 'NumSaturatedRings',
                  'NumAromaticCarbocycles', 'NumAromaticHeterocycles',
-                'NumSpiroAtoms', 'NumBridgeheadAtoms'
+               , 'NumBridgeheadAtoms'
             ])
         
         # Fingerprints
