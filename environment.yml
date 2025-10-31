@@ -20,4 +20,4 @@ dependencies:
     - requests
     - json5
     - PyTDC
-    -tensorflow
+    
