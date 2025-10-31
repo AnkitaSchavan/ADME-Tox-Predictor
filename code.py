@@ -1,3 +1,16 @@
+import os
+import sys
+import warnings
+import logging
+
+# Suppress all warnings before any imports
+warnings.filterwarnings('ignore')
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
+os.environ['STREAMLIT_SERVER_HEADLESS'] = 'true'
+
+# Suppress Streamlit warnings
+logging.getLogger('streamlit.runtime.scriptrunner_utils.script_run_context').setLevel(logging.ERROR)
+logging.getLogger('streamlit').setLevel(logging.ERROR)
 import streamlit as st
 import pandas as pd
 import numpy as np
