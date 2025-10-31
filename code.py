@@ -182,7 +182,7 @@ class AdvancedMolecularPredictor:
                 'FractionCSP3', 'MolMR', 'NumHeteroatoms', 'NumValenceElectrons',
                 'NumRadicalElectrons', 'NumAliphaticRings', 'NumSaturatedRings',
                  'NumAromaticCarbocycles', 'NumAromaticHeterocycles',
-               , 'NumBridgeheadAtoms'
+               'NumBridgeheadAtoms'
             ])
         
         # Fingerprints
