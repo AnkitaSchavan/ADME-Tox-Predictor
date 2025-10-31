@@ -1,0 +1,22 @@
+name: adme-tox-env
+channels:
+  - conda-forge
+dependencies:
+  - python=3.10
+  - rdkit
+  - pip
+  - pip:
+    - streamlit==1.39.0
+    - pandas
+    - numpy
+    - scikit-learn
+    - matplotlib
+    - seaborn
+    - plotly
+    - Pillow
+    - pubchempy
+    - py3Dmol
+    - joblib
+    - requests
+    - json5
+    - PyTDC
